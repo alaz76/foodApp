@@ -40,7 +40,8 @@ class UserController extends TokenValidator {
     public ResponseEntity<UserResponseObj> registerUser(@RequestBody UserRequestObj userRequestObj) throws UserException {
         log.info("Attempt to save a user");
         log.debug("UserRequest object found to save a user as, {}", userRequestObj);
-        return null;
+        UserResponseObj savedUser= userService.save(userRequestObj);
+        return ResponseEntity.status(201).body(savedUser);
     }
 
     /**
@@ -53,7 +54,7 @@ class UserController extends TokenValidator {
     public ResponseEntity<UserResponseObj> login(@RequestBody UserRequestObj userRequestObj) throws UserException {
         log.info("User login request received.");
         log.debug("User with email, {} is trying to authenticate.", userRequestObj.getEmail());
-        return null;
+        return ResponseEntity.ok(userService.authenticateLogin(userRequestObj));
     }
 
 
@@ -65,7 +66,7 @@ class UserController extends TokenValidator {
     @PostMapping(value = "/users/logout", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Boolean> logout(@RequestBody UserRequestObj userRequestObj) {
         log.info("User with email, {}, logout request received.", userRequestObj.getEmail());
-        return null;
+        return ResponseEntity.ok(userService.logout(userRequestObj));
     }
 
     /**
@@ -78,7 +79,8 @@ class UserController extends TokenValidator {
     @GetMapping("/users")
     public ResponseEntity<User> findUserById(HttpServletRequest request) throws AuthenticationException, UserException {
         log.info("Fetching a user with the request token.");
-        return null;
+        User user = isTokenValid(request.getHeader(Constants.HEADER_STRING));
+        return ResponseEntity.ok(user);
     }
 
     /**
@@ -94,9 +96,11 @@ class UserController extends TokenValidator {
     public ResponseEntity<User> updateUser(HttpServletRequest request, @RequestBody UserRequestObj userRequestObj)
             throws AuthenticationException, UserException {
         log.info("Authenticating a user with the request token.");
+        User user = isTokenValid(request.getHeader(Constants.HEADER_STRING));
         log.info("Updating the existing user.");
         log.debug("Updating the existing user with the update request object, {}.", userRequestObj);
-        return null;
+        User updatedUser = userService.update(user, userRequestObj);
+        return ResponseEntity.ok(updatedUser);
     }
 
     /**
@@ -112,9 +116,11 @@ class UserController extends TokenValidator {
     public ResponseEntity<User> updateUserAddress(HttpServletRequest request, @RequestBody UserRequestObj userRequestObj)
             throws AuthenticationException, UserException {
         log.info("Authenticating a user with the request token, for user address update.");
+        User user = isTokenValid(request.getHeader(Constants.HEADER_STRING));
         log.info("Updating a user Address with the received update request object.");
         log.debug("User address update request received with object, {}", userRequestObj);
-        return null;
+        User updatedUser = userService.updateUserAddress(user, userRequestObj);
+        return ResponseEntity.ok(updatedUser);
     }
 
     /**
@@ -129,8 +135,10 @@ class UserController extends TokenValidator {
     @Secured("ROLE_ADMIN")
     public ResponseEntity<User> updateCreditCard(HttpServletRequest request, @RequestBody UserRequestObj userRequestObj) throws AuthenticationException, UserException {
         log.info("Authenticating a user with the request token, for credit card update request.");
+        User user = isTokenValid(request.getHeader(Constants.HEADER_STRING));
         log.info("Updating credit card information of the user.");
         log.debug("Updating credit card information of the user, with request object as, {}.", userRequestObj);
-        return null;
+        User userMono = userService.updateCreditCard(user, userRequestObj);
+        return ResponseEntity.ok(userMono);
     }
 }

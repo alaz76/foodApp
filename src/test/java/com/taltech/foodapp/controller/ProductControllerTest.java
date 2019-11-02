@@ -144,6 +144,7 @@ public class ProductControllerTest extends TestDataUtil {
                 MockMvcRequestBuilders
                         .post("/products")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.admin_token)
                         .content(objectMapper.writeValueAsString(getProductRequestDataList().get(0)))
                         .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.productId").value(1))
@@ -160,6 +161,7 @@ public class ProductControllerTest extends TestDataUtil {
                 MockMvcRequestBuilders
                         .post("/products")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.user_token)
                         .content(objectMapper.writeValueAsString(getProductRequestDataList().get(0)))
                         .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError())
@@ -175,6 +177,7 @@ public class ProductControllerTest extends TestDataUtil {
                 MockMvcRequestBuilders
                         .delete("/products/1")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.admin_token)
                         .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andDo(MockMvcResultHandlers.print());
@@ -191,6 +194,7 @@ public class ProductControllerTest extends TestDataUtil {
                         .put("/products/1")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(objectMapper.writeValueAsString(getProductRequestDataList().get(0)))
+                        .header(Constants.HEADER_STRING, this.admin_token)
                         .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andDo(MockMvcResultHandlers.print());

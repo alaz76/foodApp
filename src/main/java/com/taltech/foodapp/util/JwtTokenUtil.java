@@ -22,4 +22,54 @@ public class JwtTokenUtil implements Serializable {
     @Value("${jwt.secret}")
     private String jwtKey;
 
+    public String getUserEmailFromKey(String token){
+        return getClaimFromToken(token, Claims::getSubject);
+    }
+
+    public Date getExpiredDateFromToken(String token) {
+        return getClaimFromToken(token, Claims::getExpiration);
+    }
+
+    public boolean isTokenValid(String token) {
+        Date expiredDate= getExpiredDateFromToken(token);
+        return !expiredDate.before(new Date());
+    }
+
+    public String generateToken(String email) {
+        return Constants.TOKEN_PREFIX + Jwts.builder()
+                .setClaims(new HashMap<>())
+                .setSubject(String.valueOf(email))
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 5 * 60 * 60 * 1000))
+                .signWith(SignatureAlgorithm.HS512, jwtKey)
+                .compact();
+    }
+
+
+    private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = Jwts.parser().setSigningKey(jwtKey).parseClaimsJws(verifyToken(token)).getBody();
+        return claimsResolver.apply(claims);
+    }
+
+    private String verifyToken(String token){
+        if(token.contains("Bearer ")){
+            return token.split(" ")[1];
+        }
+        return token;
+    }
+
+    public List<GrantedAuthority> getAuthoritiesList(String authoritiesStr){
+        List<GrantedAuthority> authorities= new ArrayList<>();
+        Arrays.asList(authoritiesStr
+                .replaceFirst("\\[","")
+                .replace("\\]","")
+                .split(",")).forEach(
+                authority -> {
+                    if(authority != null && !",".equalsIgnoreCase(authority)){
+                        authorities.add(new SimpleGrantedAuthority("ROLE_"+authority.trim()));
+                    }
+                }
+        );
+        return authorities;
+    }
 }
