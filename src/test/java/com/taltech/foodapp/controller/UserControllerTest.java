@@ -119,7 +119,8 @@ public class UserControllerTest extends TestDataUtil {
         mockClient.perform(MockMvcRequestBuilders
         .get("/users")
         .contentType(MediaType.APPLICATION_JSON_UTF8)
-        .accept(MediaType.APPLICATION_JSON_UTF8))
+        .accept(MediaType.APPLICATION_JSON_UTF8)
+        .header(Constants.HEADER_STRING,this.admin_token))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name", Matchers.notNullValue()))
         .andDo(MockMvcResultHandlers.print());
@@ -135,6 +136,7 @@ public class UserControllerTest extends TestDataUtil {
                 .put("/user")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.APPLICATION_JSON_UTF8)
+                .header(Constants.HEADER_STRING,this.admin_token)
                 .content(objectMapper.writeValueAsString(getUpdateUserPaylod())))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Anupam Rakshit"))
@@ -149,6 +151,7 @@ public class UserControllerTest extends TestDataUtil {
                 .put("/user/creditCard")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.APPLICATION_JSON_UTF8)
+                .header(Constants.HEADER_STRING,this.admin_token)
                 .content(objectMapper.writeValueAsString(getUserRequestObj().get(1))))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.creditCard").value(Matchers.notNullValue()))
@@ -163,9 +166,9 @@ public class UserControllerTest extends TestDataUtil {
                 .post("/users/logout")
                 .content(objectMapper.writeValueAsString(getUserRequestObj().get(0)))
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .header(Constants.HEADER_STRING,this.admin_token))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name", Matchers.notNullValue()))
                 .andDo(MockMvcResultHandlers.print());
     }
 }

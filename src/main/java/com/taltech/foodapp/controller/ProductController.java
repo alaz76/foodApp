@@ -37,7 +37,7 @@ class ProductController extends TokenValidator {
     @GetMapping("/products")
     public ResponseEntity<List<Product>> findAll(){
         log.info("Fetching all products from the data store.");
-        return null;
+        return ResponseEntity.ok(productService.findAllProducts());
     }
 
     /**
@@ -50,8 +50,9 @@ class ProductController extends TokenValidator {
     @Secured("ROLE_ADMIN")
     public ResponseEntity<Product> create(HttpServletRequest request, @RequestBody ProductRequestObj productRequestObj) throws CategoryException, AuthenticationException, UserException {
         log.info("Authorizing the request with received token");
+        User user = isTokenValid(request.getHeader(Constants.HEADER_STRING));
         log.info("Creating a product.");
-        return null;
+        return ResponseEntity.ok(productService.save(productRequestObj));
 
     }
 
@@ -63,7 +64,7 @@ class ProductController extends TokenValidator {
     @GetMapping("/products/{product_id}")
     public ResponseEntity<Product> getProduct(@PathVariable int product_id){
         log.info("Find a product with productId, {}", product_id);
-        return null;
+        return ResponseEntity.ok(productService.findProductById(product_id));
     }
 
     /**
@@ -76,7 +77,8 @@ class ProductController extends TokenValidator {
             @PathVariable int category_id){
 
         log.info("Fetching all products in a category with category id, {}", category_id);
-        return null;
+        ResponseObj response= productService.getAllProductsByCategory(category_id);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -91,8 +93,10 @@ class ProductController extends TokenValidator {
     @Secured("ROLE_ADMIN")
     public ResponseEntity delete(HttpServletRequest request, @PathVariable int productId) throws AuthenticationException, UserException {
         log.info("Authenticating against the provided token.");
+        isTokenValid(request.getHeader(Constants.HEADER_STRING));
         log.info("Attempting to delete a product.");
-        return null;
+        productService.delete(productId);
+        return ResponseEntity.ok("Deleted.");
     }
 
 
@@ -110,6 +114,9 @@ class ProductController extends TokenValidator {
                                           @RequestBody ProductRequestObj productRequestObj) throws AuthenticationException, UserException, ProductException, CategoryException {
 
         log.info("Authenticating against the provided token.");
-        return null;
+        User user = isTokenValid(request.getHeader(Constants.HEADER_STRING));
+        log.info("Updating a product by user with email: "+ user.getEmail());
+        Product updatedProduct= productService.update(productId, productRequestObj);
+        return ResponseEntity.ok(updatedProduct);
     }
 }
