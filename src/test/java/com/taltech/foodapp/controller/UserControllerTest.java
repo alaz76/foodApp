@@ -99,6 +99,32 @@ public class UserControllerTest extends TestDataUtil {
     }
 
     @Test
+    public void createUser2() throws Exception {
+        Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(getUserResponseObj().get(1).getUser());
+        mockClient.perform(MockMvcRequestBuilders
+                .post("/users")
+                .content(objectMapper.writeValueAsString(getUserRequestObj().get(0)))
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.user.userId").exists())
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test(expected = Exception.class)
+    public void createUser2FailedCase() throws Exception {
+        Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(getUserResponseObj().get(1).getUser());
+        mockClient.perform(MockMvcRequestBuilders
+                .post("/users")
+                .content(String.valueOf(null))
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.user.userId").exists())
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
     public void login() throws Exception{
         Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(getUserResponseObj().get(0).getUser());
         Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
@@ -110,12 +136,54 @@ public class UserControllerTest extends TestDataUtil {
                 .andDo(MockMvcResultHandlers.print());
     }
 
+    @Test(expected = Exception.class)
+    public void loginFailedScenario() throws Exception{
+        Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(getUserResponseObj().get(0).getUser());
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        mockClient.perform(MockMvcRequestBuilders
+                .post("/users/login")
+                .content(String.valueOf(null))
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andDo(MockMvcResultHandlers.print());
+    }
+
     @Test
     public void findUserById() throws Exception {
 
         Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(getUserResponseObj().get(0).getUser());
         Mockito.when(userRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(getUserResponseObj().get(0).getUser()));
         Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        mockClient.perform(MockMvcRequestBuilders
+        .get("/users")
+        .contentType(MediaType.APPLICATION_JSON_UTF8)
+        .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name", Matchers.notNullValue()))
+        .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void findUserById2() throws Exception {
+
+        Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(getUserResponseObj().get(1).getUser());
+        Mockito.when(userRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(getUserResponseObj().get(1).getUser()));
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(1).getUser());
+        mockClient.perform(MockMvcRequestBuilders
+        .get("/users")
+        .contentType(MediaType.APPLICATION_JSON_UTF8)
+        .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name", Matchers.notNullValue()))
+        .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void findUserByIdFailedScenario() throws Exception {
+
+        Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(getUserResponseObj().get(1).getUser());
+        Mockito.when(userRepository.findById(Mockito.anyInt())).thenReturn(Optional.empty());
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(1).getUser());
         mockClient.perform(MockMvcRequestBuilders
         .get("/users")
         .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -142,6 +210,22 @@ public class UserControllerTest extends TestDataUtil {
     }
 
     @Test
+    public void updateUserFailedScenario() throws Exception {
+
+        Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(getUpdatedUserResponseObj().getUser());
+        Mockito.when(session.load(User.class,1)).thenReturn(getUserResponseObj().get(0).getUser());
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        mockClient.perform(MockMvcRequestBuilders
+                .put("/user")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .content(String.valueOf(null)))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Anupam Rakshit"))
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
     public void updateCreditCard() throws Exception {
         Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(getUpdatedCCResponseObj().getUser());
         Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
@@ -150,6 +234,20 @@ public class UserControllerTest extends TestDataUtil {
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(getUserRequestObj().get(1))))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.creditCard").value(Matchers.notNullValue()))
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void updateCreditCardFailedScenario() throws Exception {
+        Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(getUpdatedCCResponseObj().getUser());
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        mockClient.perform(MockMvcRequestBuilders
+                .put("/user/creditCard")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .content(String.valueOf(null)))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.creditCard").value(Matchers.notNullValue()))
                 .andDo(MockMvcResultHandlers.print());
