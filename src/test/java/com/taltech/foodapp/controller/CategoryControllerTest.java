@@ -98,7 +98,8 @@ public class CategoryControllerTest extends TestDataUtil {
                 MockMvcRequestBuilders
                         .get("/categories")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.user_token))
                 .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(2)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.[0].category_id").value(1))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
@@ -113,7 +114,8 @@ public class CategoryControllerTest extends TestDataUtil {
                 MockMvcRequestBuilders
                         .get("/categories/2")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.admin_token))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Category 2"))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andDo(MockMvcResultHandlers.print());
@@ -128,7 +130,8 @@ public class CategoryControllerTest extends TestDataUtil {
                         .post("/categories")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(objectMapper.writeValueAsString(getCategoryRequestObj().get(0)))
-                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.admin_token))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Category 2"))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andDo(MockMvcResultHandlers.print());
@@ -143,7 +146,8 @@ public class CategoryControllerTest extends TestDataUtil {
                 MockMvcRequestBuilders
                         .delete("/categories/1")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.admin_token))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andDo(MockMvcResultHandlers.print());
     }
@@ -158,7 +162,8 @@ public class CategoryControllerTest extends TestDataUtil {
                         .put("/categories/1")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(objectMapper.writeValueAsString(getCategoryRequestObj().get(0)))
-                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.admin_token))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Category 1"))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andDo(MockMvcResultHandlers.print());

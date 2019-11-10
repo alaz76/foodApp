@@ -36,7 +36,7 @@ class CategoryController extends TokenValidator {
     @GetMapping("/categories")
     public ResponseEntity<List<CategoryResponseObj>> getAllCategories(){
         log.info("Finding all categories.");
-        return null;
+        return ResponseEntity.ok(categoryService.findAll());
     }
 
     /**
@@ -48,7 +48,7 @@ class CategoryController extends TokenValidator {
     @GetMapping("/categories/{category_id}")
     public ResponseEntity<CategoryResponseObj> getCategory(@PathVariable int category_id) throws CategoryException {
         log.info("Get a category having category id: {}", category_id);
-        return null;
+        return ResponseEntity.ok(categoryService.findById(category_id));
     }
 
     /**
@@ -64,7 +64,10 @@ class CategoryController extends TokenValidator {
     @Secured("ROLE_ADMIN")
     public ResponseEntity<Category> create(HttpServletRequest request, @RequestBody CategoryRequestObj categoryRequestObj) throws AuthenticationException, UserException, ProductException {
         log.info("Attempting authentication against the token received.");
-        return null;
+        User user = isTokenValid(request.getHeader(Constants.HEADER_STRING));
+        log.info("Admin User with email: "+ user.getEmail()+", is trying to create a category.");
+        Category savedCategory= categoryService.save(categoryRequestObj);
+        return ResponseEntity.ok(savedCategory);
     }
 
     /**
@@ -79,7 +82,10 @@ class CategoryController extends TokenValidator {
     @Secured("ROLE_ADMIN")
     public ResponseEntity<Integer> delete(HttpServletRequest request, @PathVariable int categoryId) throws AuthenticationException, UserException,CategoryException {
         log.info("Attempting authentication against the token received.");
-        return null;
+        User user = isTokenValid(request.getHeader(Constants.HEADER_STRING));
+        log.info("Admin User with email: "+ user.getEmail()+", is trying to DELETE a category with id: "+categoryId);
+        categoryService.delete(categoryId);
+        return ResponseEntity.ok(categoryId);
     }
 
 
@@ -97,7 +103,10 @@ class CategoryController extends TokenValidator {
                                            @PathVariable int categoryId,
                                            @RequestBody CategoryRequestObj categoryRequestObj) throws AuthenticationException, UserException, CategoryException {
         log.info("Attempting authentication against the token received.");
-        return null;
+        User user = isTokenValid(request.getHeader(Constants.HEADER_STRING));
+        log.info("Admin User with email: "+ user.getEmail()+", is trying to create a category.");
+        Category category= categoryService.update(categoryId, categoryRequestObj);
+        return ResponseEntity.ok(category);
     }
 
 }

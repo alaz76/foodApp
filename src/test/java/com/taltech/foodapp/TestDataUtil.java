@@ -22,6 +22,7 @@ public abstract class TestDataUtil {
         userRequestObj.setEmail("anupam@gmail.com");
         userRequestObj.setAddress1("Estonia");
         userRequestObj.setCreditCard(new StringBuilder("xxxxxxxxxxxxxxxx"));
+        userRequestObj.setAuthorities(Constants.Roles.ADMIN.name());
         userRequestObjs.add(userRequestObj);
 
         UserRequestObj userRequestObj1 = new UserRequestObj();
@@ -30,6 +31,7 @@ public abstract class TestDataUtil {
         userRequestObj1.setEmail("anupam12@gmail.com");
         userRequestObj1.setAddress1("Estonia");
         userRequestObj1.setCreditCard(new StringBuilder("xxxxxxxxxxxxxxxx"));
+        userRequestObj1.setAuthorities(Constants.Roles.USER.name());
         userRequestObjs.add(userRequestObj1);
 
         return userRequestObjs;
@@ -43,6 +45,7 @@ public abstract class TestDataUtil {
         user.setEmail("anupam@gmail.com");
         user.setPassword("12345pwd");
         user.setAddress1("Estonia");
+        user.setAuthorities(Constants.Roles.ADMIN.name());
         UserResponseObj userRequestObj= new UserResponseObj();
         userRequestObj.setUser(user);
         userResponseObjs.add(userRequestObj);
@@ -53,6 +56,7 @@ public abstract class TestDataUtil {
         user1.setEmail("anupam12@gmail.com");
         user1.setPassword("12345pwd");
         user1.setAddress1("Estonia");
+        user1.setAuthorities(Constants.Roles.USER.name());
         UserResponseObj userRequestObj1= new UserResponseObj();
         userRequestObj1.setUser(user1);
         userResponseObjs.add(userRequestObj1);
