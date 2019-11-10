@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.util.NestedServletException;
 
 import java.util.Optional;
 
@@ -106,8 +107,24 @@ public class CategoryControllerTest extends TestDataUtil {
                 .andDo(MockMvcResultHandlers.print());
     }
 
+    @Test(expected = NestedServletException.class)
+    public void getEmptyCategories() throws Exception {
+        Mockito.when(categoryRepository.findAll()).thenReturn(null);
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        mockClient.perform(
+                MockMvcRequestBuilders
+                        .get("/categories")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.user_token))
+                .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(2)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].category_id").value(1))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
     @Test
-    public void getCategory() throws Exception {
+    public void getCategory2() throws Exception {
         Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
         Mockito.when(categoryRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(getCategoryData()));
         mockClient.perform(
@@ -117,7 +134,38 @@ public class CategoryControllerTest extends TestDataUtil {
                         .accept(MediaType.APPLICATION_JSON_UTF8)
                         .header(Constants.HEADER_STRING, this.admin_token))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Category 2"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.category_id").value(2))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void getCategory1() throws Exception {
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        Mockito.when(categoryRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(getCategoryList().get(0)));
+        mockClient.perform(
+                MockMvcRequestBuilders
+                        .get("/categories/2")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.admin_token))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Category 1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.category_id").value(1))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void getCategoryFailedScenario() throws Exception {
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        Mockito.when(categoryRepository.findById(Mockito.anyInt())).thenReturn(Optional.empty());
+        mockClient.perform(
+                MockMvcRequestBuilders
+                        .get("/categories/200")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.admin_token))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError())
                 .andDo(MockMvcResultHandlers.print());
     }
 
@@ -138,7 +186,22 @@ public class CategoryControllerTest extends TestDataUtil {
     }
 
     @Test
-    public void deleteCategory() throws Exception {
+    public void createCategoryNegativeScenario() throws Exception {
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        Mockito.when(categoryRepository.save(Mockito.any(Category.class))).thenReturn(getCategoryData());
+        mockClient.perform(
+                MockMvcRequestBuilders
+                        .post("/categories")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(objectMapper.writeValueAsString(null))
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.admin_token))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void deleteCategory1() throws Exception {
         Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
         Mockito.when(categoryRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(getCategoryData()));
         Mockito.doNothing().when(categoryRepository).delete(getCategoryData());
@@ -153,7 +216,37 @@ public class CategoryControllerTest extends TestDataUtil {
     }
 
     @Test
-    public void updateCategory() throws Exception {
+    public void deleteCategory2() throws Exception {
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        Mockito.when(categoryRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(getCategoryList().get(1)));
+        Mockito.doNothing().when(categoryRepository).delete(getCategoryData());
+        mockClient.perform(
+                MockMvcRequestBuilders
+                        .delete("/categories/2")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.admin_token))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void deleteCategoryFailedScenario() throws Exception {
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        Mockito.when(categoryRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(getCategoryList().get(1)));
+        Mockito.doNothing().when(categoryRepository).delete(getCategoryData());
+        mockClient.perform(
+                MockMvcRequestBuilders
+                        .delete("/categories/2")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.user_token))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void updateCategory1() throws Exception {
         Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
         Mockito.when(categoryRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(getCategoryData()));
         Mockito.when(categoryRepository.save(Mockito.any(Category.class))).thenReturn(getCategoryData());
@@ -164,6 +257,39 @@ public class CategoryControllerTest extends TestDataUtil {
                         .content(objectMapper.writeValueAsString(getCategoryRequestObj().get(0)))
                         .accept(MediaType.APPLICATION_JSON_UTF8)
                         .header(Constants.HEADER_STRING, this.admin_token))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Category 1"))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+    @Test
+    public void updateCategory2() throws Exception {
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        Mockito.when(categoryRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(getCategoryList().get(0)));
+        Mockito.when(categoryRepository.save(Mockito.any(Category.class))).thenReturn(getCategoryList().get(0));
+        mockClient.perform(
+                MockMvcRequestBuilders
+                        .put("/categories/2")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(objectMapper.writeValueAsString(getCategoryRequestObj().get(0)))
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.admin_token))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Category 1"))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void updateCategoryFailedScenario() throws Exception {
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        Mockito.when(categoryRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(getCategoryData()));
+        Mockito.when(categoryRepository.save(Mockito.any(Category.class))).thenReturn(getCategoryData());
+        mockClient.perform(
+                MockMvcRequestBuilders
+                        .put("/categories/1")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(objectMapper.writeValueAsString(getCategoryRequestObj().get(0)))
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.user_token))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Category 1"))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andDo(MockMvcResultHandlers.print());

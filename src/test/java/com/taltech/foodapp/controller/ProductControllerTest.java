@@ -29,7 +29,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.util.NestedServletException;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RunWith(SpringRunner.class)
@@ -108,6 +110,19 @@ public class ProductControllerTest extends TestDataUtil {
     }
 
     @Test
+    public void findAllNoProducts() throws Exception {
+        Mockito.when(productRepository.findAll()).thenReturn(null);
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        mockClient.perform(
+                MockMvcRequestBuilders
+                        .get("/products")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
     public void getProduct() throws Exception {
         Mockito.when(productRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(getProductResponseList().get(0)));
         Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
@@ -118,6 +133,20 @@ public class ProductControllerTest extends TestDataUtil {
                         .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.productId").value(1))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void getProductFailedScenario() throws Exception {
+        Mockito.when(productRepository.findById(Mockito.anyInt())).thenReturn(Optional.empty());
+       // Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());//
+        mockClient.perform(
+                MockMvcRequestBuilders
+                        .get("/products/100")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.productId").isEmpty())
+                .andExpect(MockMvcResultMatchers.status().is5xxServerError())
                 .andDo(MockMvcResultHandlers.print());
     }
 
@@ -136,6 +165,19 @@ public class ProductControllerTest extends TestDataUtil {
     }
 
     @Test
+    public void getEmptyProductsInCategory() throws Exception {
+        Mockito.when(productRepository.findAllByCategory(Mockito.anyInt())).thenReturn(Optional.empty());
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        mockClient.perform(
+                MockMvcRequestBuilders
+                        .get("/products/inCategory/3")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
     public void createProduct() throws Exception{
         Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(getProductResponseList().get(0));
         Mockito.when(categoryRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(getCategoryData()));
@@ -149,6 +191,22 @@ public class ProductControllerTest extends TestDataUtil {
                         .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.productId").value(1))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void createProductFailedScenario() throws Exception{
+        Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(getProductResponseList().get(0));
+        Mockito.when(categoryRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(getCategoryData()));
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        mockClient.perform(
+                MockMvcRequestBuilders
+                        .post("/products")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.admin_token)
+                        .content(objectMapper.writeValueAsString(null))
+                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError())
                 .andDo(MockMvcResultHandlers.print());
     }
 
@@ -184,6 +242,21 @@ public class ProductControllerTest extends TestDataUtil {
     }
 
     @Test
+    public void deleteProductWithWrongId() throws Exception{
+        Mockito.doNothing().when(productRepository).deleteById(Mockito.anyInt());
+        Mockito.when(categoryRepository.findById(Mockito.anyInt())).thenReturn(Optional.empty());
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        mockClient.perform(
+                MockMvcRequestBuilders
+                        .delete("/products/1")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .header(Constants.HEADER_STRING, this.admin_token)
+                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
     public void updateProduct() throws Exception{
         Mockito.when(productRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(getProductResponseList().get(0)));
         Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(getProductResponseList().get(0));
@@ -197,6 +270,40 @@ public class ProductControllerTest extends TestDataUtil {
                         .header(Constants.HEADER_STRING, this.admin_token)
                         .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void updateProduct2() throws Exception{
+        Mockito.when(productRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(getProductResponseList().get(1)));
+        Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(getProductResponseList().get(1));
+        Mockito.when(categoryRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(getCategoryData()));
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        mockClient.perform(
+                MockMvcRequestBuilders
+                        .put("/products/1")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(objectMapper.writeValueAsString(getProductRequestDataList().get(1)))
+                        .header(Constants.HEADER_STRING, this.admin_token)
+                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void updateProductFailedScenario() throws Exception{
+        Mockito.when(productRepository.findById(Mockito.anyInt())).thenReturn(Optional.empty());
+        Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(getProductResponseList().get(0));
+        Mockito.when(categoryRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(getCategoryData()));
+        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
+        mockClient.perform(
+                MockMvcRequestBuilders
+                        .put("/products/1")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(objectMapper.writeValueAsString(getProductRequestDataList().get(0)))
+                        .header(Constants.HEADER_STRING, this.admin_token)
+                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError())
                 .andDo(MockMvcResultHandlers.print());
     }
 

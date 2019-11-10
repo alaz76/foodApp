@@ -100,7 +100,7 @@ public abstract class TestDataUtil {
         category1.setProducts(new HashSet<>());
         categories.add(category1);
         Category category2 = new Category();
-        category2.setCategoryId(1);
+        category2.setCategoryId(2);
         category2.setName("Category 2");
         category2.setDescription("Description 2");
         category2.setProducts(new HashSet<>());
