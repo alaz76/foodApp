@@ -111,7 +111,7 @@ public class UserControllerTest extends TestDataUtil {
                 .andDo(MockMvcResultHandlers.print());
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = NullPointerException.class)
     public void createUser2FailedCase() throws Exception {
         Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(getUserResponseObj().get(1).getUser());
         mockClient.perform(MockMvcRequestBuilders
@@ -136,7 +136,7 @@ public class UserControllerTest extends TestDataUtil {
                 .andDo(MockMvcResultHandlers.print());
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = NullPointerException.class)
     public void loginFailedScenario() throws Exception{
         Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(getUserResponseObj().get(0).getUser());
         Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
@@ -174,8 +174,7 @@ public class UserControllerTest extends TestDataUtil {
         .get("/users")
         .contentType(MediaType.APPLICATION_JSON_UTF8)
         .accept(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name", Matchers.notNullValue()))
+                .andExpect(MockMvcResultMatchers.status().isForbidden())
         .andDo(MockMvcResultHandlers.print());
     }
 
@@ -189,8 +188,7 @@ public class UserControllerTest extends TestDataUtil {
         .get("/users")
         .contentType(MediaType.APPLICATION_JSON_UTF8)
         .accept(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name", Matchers.notNullValue()))
+                .andExpect(MockMvcResultMatchers.status().isForbidden())
         .andDo(MockMvcResultHandlers.print());
     }
 
@@ -211,7 +209,7 @@ public class UserControllerTest extends TestDataUtil {
                 .andDo(MockMvcResultHandlers.print());
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void updateUserFailedScenario() throws Exception {
 
         Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(getUpdatedUserResponseObj().getUser());
@@ -242,7 +240,7 @@ public class UserControllerTest extends TestDataUtil {
                 .andDo(MockMvcResultHandlers.print());
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void updateCreditCardFailedScenario() throws Exception {
         Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(getUpdatedCCResponseObj().getUser());
         Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(getUserResponseObj().get(0).getUser());
