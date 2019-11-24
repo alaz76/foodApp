@@ -1,0 +1,5 @@
+Label,# Samples,Average,Min,Max,Std. Dev.,Error %,Throughput,Received KB/sec,Sent KB/sec,Avg. Bytes
+CreateUserRequest,5697,3049,21,143649,14853.66,0.000%,.81375,0.83,0.24,1049.4
+Debug Sampler,6000,0,0,76,1.36,0.000%,.85715,11.49,0.00,13728.3
+LoginUser,5697,228,9,140540,4206.01,0.000%,.81386,0.83,0.39,1049.4
+TOTAL,17394,1073,0,143649,8942.37,0.000%,2.48451,13.16,0.63,5422.9
